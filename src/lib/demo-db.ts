@@ -14,6 +14,8 @@ export async function database() {
   if(!exists.rows[0].name) { await db.exec(bootstrapSQL); await db.exec(await readFile(resolve('supabase/schema.sql'),'utf8')); await seedDemo(db); }
   const social=await db.query<{name:string|null}>("select to_regclass('public.pick_likes')::text name");
   if(!social.rows[0].name) await db.exec(await readFile(resolve('supabase/migrations/20260918100000_social_cards.sql'),'utf8'));
+  const manual=await db.query<{name:string|null}>("select to_regprocedure('public.publish_post(jsonb)')::text name");
+  if(!manual.rows[0].name) await db.exec(await readFile(resolve('supabase/migrations/20260918110000_manual_posts.sql'),'utf8'));
   await db.exec('create table if not exists private.demo_sessions(token_hash text primary key,user_id uuid not null,expires_at timestamptz not null)');
   return db;
  })();

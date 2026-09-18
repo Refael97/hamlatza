@@ -2,7 +2,7 @@ import { sameOrigin } from '@/lib/request';
 import { NextResponse, after } from 'next/server';
 import { rpc, identity } from '@/lib/data';
 import { createClient } from '@supabase/supabase-js';
-import { pickInput, profileInput, parseImport, errorText } from '@/lib/validation';
+import { postInput, profileInput, parseImport, errorText } from '@/lib/validation';
 import { isDemo, demoRpc, database, serial } from '@/lib/demo-db';
 import { supabase } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
@@ -13,7 +13,7 @@ export async function POST(request:Request,{params}:{params:Promise<{action:stri
   if(Number(request.headers.get('content-length')||0)>300000)return NextResponse.json({message:'הבקשה גדולה מדי.'},{status:413});
   const raw=await request.text();if(raw.length>300000)throw new Error('INVALID_INPUT');
   const input=JSON.parse(raw),{action}=await params; let result:unknown;
-  if(action==='publish') {result=await rpc('publish_pick',pickInput.parse(input));if(isDemo())after(async()=>{await demoRpc('process_jobs',{},null,true);});}
+  if(action==='publish') {result=await rpc('publish_post',postInput.parse(input));if(isDemo())after(async()=>{await demoRpc('process_jobs',{},null,true);});}
   else if(action==='profile')result=await rpc('save_profile',profileInput.parse(input));
   else if(action==='like')result=await rpc('like_pick',z.object({id:z.uuid(),liked:z.boolean()}).parse(input));
   else if(action==='follow')result=await rpc('follow_user',z.object({id:z.uuid(),follow:z.boolean()}).parse(input));

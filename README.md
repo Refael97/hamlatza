@@ -1,3 +1,5 @@
+> MVP update: publication now uses a single free-text post (3–600 characters), with persistent likes and follows. No sports API or fixture selection is required. Manual posts have no odds or automated outcome statistics. Existing structured recommendations are retained. Apply `20260918110000_manual_posts.sql` after the preceding migrations.
+
 # המלצה · hamlatza
 
 אפליקציית המלצות ספורט בעברית וב־RTL: המלצות מובנות ונעולות, היסטוריה מלאה, דירוג שקוף, מעקב, התראות וממשק ניהול. מיועדת לבני 18 ומעלה. אינה מקבלת הימורים או מחזיקה כספים, ואינה קשורה ל־Winner.

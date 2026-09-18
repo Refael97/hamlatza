@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import Papa from 'papaparse';
+export const postInput=z.object({analysis:z.string().trim().min(3).max(600),key:z.uuid()});
 export const pickInput=z.object({selection_id:z.uuid(),odds:z.coerce.number().gt(1).max(1000),analysis:z.string().max(600).default(''),key:z.uuid()});
 export const profileInput=z.object({nickname:z.string().regex(/^[a-zA-Z0-9א-ת_]{3,24}$/),bio:z.string().max(300).default(''),avatar:z.number().int().min(0).max(19),full_name:z.string().min(2).max(100).optional(),adult:z.boolean().optional(),terms:z.boolean().optional()});
 const csvRow=z.object({sport_code:z.enum(['football','basketball']),league_name:z.string().min(1).max(100),starts_at:z.iso.datetime({offset:true}),home_participant:z.string().min(1).max(100),away_participant:z.string().min(1).max(100),market_code:z.string().min(1).max(80),line_value:z.string().refine(v=>v===''||Number.isFinite(Number(v))),selection_code:z.string().min(1).max(80),selection_label_he:z.string().min(1).max(100),decimal_odds:z.coerce.number().gt(1).max(1000),source_updated_at:z.iso.datetime({offset:true}),external_event_id:z.string().min(1).max(100),market_label_he:z.string().optional()});
