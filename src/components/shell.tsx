@@ -1,0 +1,12 @@
+'use client';
+import Link from 'next/link';
+import {usePathname} from 'next/navigation';
+import {Target,Plus,Bell,UserRound,ChartNoAxesColumnIncreasing,Rows3,Info,ShieldCheck} from 'lucide-react';
+import {useApp} from './context';
+import {Avatar} from './ui';
+export function Shell({children}:{children:React.ReactNode}){const {data}=useApp();const path=usePathname();const unread=data.notifications.filter(n=>!n.read_at).length;
+ const links=[['/feed','המלצות',Rows3],['/tipsters','ממליצים',ChartNoAxesColumnIncreasing],['/create','פרסום',Plus],['/notifications','התראות',Bell],['/settings/profile','פרופיל',UserRound]] as const;
+ return <><a href="#main" className="skip">דילוג לתוכן</a><header className="header"><div className="header-inner"><Link href="/feed" className="brand"><Target size={34}/><span>המלצה<span className="brand-dot">.</span></span></Link><nav className="desktop-nav" aria-label="ניווט ראשי"><Link className={path==='/feed'||path==='/'?'active':''} href="/feed">המלצות</Link><Link className={path.startsWith('/tipsters')?'active':''} href="/tipsters">ממליצים</Link><Link href="/how-it-works">איך זה עובד</Link></nav><div className="header-actions"><Link className="button primary publish-nav" href="/create"><Plus size={18}/>פרסום המלצה</Link><Link className="icon-button notification-button" href="/notifications" aria-label={`התראות${unread?`, ${unread} חדשות`:''}`}><Bell size={20}/>{unread>0&&<i/>}</Link>{data.me?<Link className="account-link" href="/settings/profile"><Avatar profile={data.me} size={35}/></Link>:<Link className="login-link" href="/login">כניסה</Link>}</div></div></header>
+ {data.demo&&<div className="demo-banner"><Info size={15}/><span>מצב הדגמה · המשחקים, היחסים והביצועים הם נתונים סינתטיים לצורכי בדיקה.</span></div>}
+ <main id="main" className="main">{children}</main><footer className="footer"><span><ShieldCheck size={16}/> המלצה. כל התוצאות נשארות.</span><div><Link href="/responsible-play">18+ · משחקים באחריות</Link><Link href="/terms">תנאי שימוש</Link><Link href="/privacy">פרטיות</Link>{data.role&&<Link href="/admin">ניהול</Link>}</div><p>תוכן וקהילה בלבד. אין הבטחת זכייה ואין זיקה רשמית ל־Winner או למועצה להסדר ההימורים בספורט.</p></footer>
+ <nav className="mobile-nav" aria-label="ניווט מובייל">{links.map(([href,label,Icon])=><Link key={href} href={href} className={`${path.startsWith(href)?'active':''} ${href==='/create'?'create-tab':''}`}><Icon size={21}/><span>{label}</span></Link>)}</nav></>;}

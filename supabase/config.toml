@@ -1,0 +1,22 @@
+project_id = "hamlatza"
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+[db]
+port = 54322
+major_version = 17
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+enable_signup = true
+jwt_expiry = 1800
+[auth.rate_limit]
+sms_sent = 5
+sign_in_sign_ups = 30
+[auth.sms]
+enable_signup = true
+enable_confirmations = true

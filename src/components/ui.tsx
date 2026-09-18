@@ -1,0 +1,10 @@
+'use client';
+import Link from 'next/link';
+import { useState } from 'react';
+import { Check, Plus, ShieldCheck, LockKeyhole, BarChart3, ArrowLeft, Target } from 'lucide-react';
+import {useApp} from './context';
+import type {Profile} from '@/lib/types';
+export function Avatar({profile,size=44}:{profile:Pick<Profile,'avatar'|'nickname'>;size?:number}){return <span className="avatar" role="img" aria-label={`אווטאר של ${profile.nickname}`} style={{width:size,height:size,backgroundPosition:`${(profile.avatar%5)*25}% ${Math.floor(profile.avatar/5)*100/3}%`}}/>;}
+export function Follow({id}:{id:string}){const {data,act,toast}=useApp();const [busy,setBusy]=useState(false);const followed=data.following.includes(id);if(data.me?.id===id)return null;if(!data.me)return <Link className="button outline small" href="/login"><Plus size={14}/>מעקב</Link>;return <button className={`button small ${followed?'soft':'outline'}`} disabled={busy} onClick={async()=>{setBusy(true);try{await act('follow',{id,follow:!followed});}catch(e){toast((e as Error).message);}finally{setBusy(false);}}}>{followed?<Check size={14}/>:<Plus size={14}/>} {followed?'במעקב':'מעקב'}</button>;}
+export function Empty({title,body,href,label}:{title:string;body:string;href?:string;label?:string}){return <div className="empty"><Target size={36}/><h2>{title}</h2><p>{body}</p>{href&&<Link className="button primary" href={href}>{label}</Link>}</div>;}
+export function TrustPanel(){return <section className="trust"><h2><ShieldCheck/> שקיפות לפני הכול</h2>{[[LockKeyhole,'כל המלצה נשארת','אחרי הפרסום אי אפשר לערוך או למחוק. גם כשהתוצאה לא כצפוי.'],[BarChart3,'אותה יחידה. אותם כללים.','כל המלצה מחושבת לפי יחידה אחת, בלי קשר לסכומי כסף.'],[ShieldCheck,'היסטוריה שאפשר לבדוק','התוצאות, היחסים והתיקונים פתוחים לעיון של כולם.']].map(([Icon,title,body])=>{const I=Icon as typeof ShieldCheck;return <div className="trust-row" key={String(title)}><I size={22}/><div><strong>{String(title)}</strong><p>{String(body)}</p></div></div>;})}<Link href="/how-it-works">כך מחושב הדירוג <ArrowLeft size={15}/></Link></section>;}
