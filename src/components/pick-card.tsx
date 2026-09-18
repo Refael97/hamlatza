@@ -1,16 +1,21 @@
 'use client';
+import {useState} from 'react';
 import Link from 'next/link';
-import {LockKeyhole,ArrowLeft,Share2,Flag,Check,Clock3} from 'lucide-react';
+import {LockKeyhole,ArrowLeft,Share2,Flag,Check,Heart} from 'lucide-react';
 import {useApp} from './context';
-import {Avatar,Follow} from './ui';
-import {type Pick,dateLabel,statusLabels,sportLabels,signed} from '@/lib/types';
-export function PickCard({pick,detail=false}:{pick:Pick;detail?:boolean}){const {data,toast,act}=useApp();const user=data.profiles.find(p=>p.id===pick.user_id),event=data.events.find(e=>e.id===pick.event_id),selection=data.selections.find(s=>s.id===pick.selection_id),market=data.markets.find(m=>m.id===pick.market_id);if(!user||!event||!selection)return null;
+import {Avatar,Follow,Streak} from './ui';
+import {type Pick,dateLabel,statusLabels} from '@/lib/types';
+export function PickCard({pick,detail=false}:{pick:Pick;detail?:boolean}){
+ const {data,toast,act}=useApp();const [busy,setBusy]=useState(false);
+ const user=data.profiles.find(p=>p.id===pick.user_id),event=data.events.find(e=>e.id===pick.event_id),selection=data.selections.find(s=>s.id===pick.selection_id),market=data.markets.find(m=>m.id===pick.market_id);
+ if(!user||!event||!selection)return null;
+ const liked=data.liked.includes(pick.id),count=data.likes[pick.id]||0;
  async function share(){const url=`${location.origin}/picks/${pick.id}`;try{if(navigator.share)await navigator.share({title:`${event!.home} — ${event!.away}`,url});else{await navigator.clipboard.writeText(url);toast('הקישור הועתק');}}catch{toast('אפשר להעתיק את כתובת ההמלצה משורת הכתובת.');}}
- return <article className="pick-card"><div className="pick-top"><div className="league"><span className={`sport-icon ${event.sport}`}>{event.sport==='football'?'⚽':'◉'}</span><span>{sportLabels[event.sport]}<span className="divider">|</span>{event.league}</span></div><div className="author"><Link href={`/tipsters/${user.nickname}`}><Avatar profile={user}/><span><strong>{user.nickname.replaceAll('_',' ')}</strong><time dateTime={pick.published_at}>{dateLabel(pick.published_at)}</time></span></Link><Follow id={user.id}/></div></div>
- <div className="fixture"><div><span className="team-mark">{event.home.split(' ').map(n=>n[0]).slice(0,2).join('')}</span><strong>{event.home}</strong></div><span className="versus">VS</span><div><strong>{event.away}</strong><span className="team-mark away">{event.away.split(' ').map(n=>n[0]).slice(0,2).join('')}</span></div></div>
- <div className="kickoff"><Clock3 size={13}/> {dateLabel(event.starts_at)} · שעון ישראל</div>
- <div className="selection-strip"><div><span className="overline">{market?.label}</span><strong>{selection.label}</strong></div><div className="odds"><span>יחס בפרסום</span><b dir="ltr">{Number(pick.published_odds).toFixed(2)}</b></div></div>
- <div className="pick-status"><span className={`status ${pick.status}`}>{pick.status==='won'?<Check size={14}/>:<LockKeyhole size={13}/>} {statusLabels[pick.status]}</span><span>{pick.profit_units!==null?<b dir="ltr" className={Number(pick.profit_units)>=0?'positive':'negative'}>{signed(Number(pick.profit_units),'u')}</b>:<><LockKeyhole size={12}/> פרטי ההמלצה נעולים</>}</span></div>
- <p className="analysis">{pick.hidden?'הניתוח הוסתר על ידי צוות המודרציה. הרשומה והביצועים נשמרים.':pick.analysis||'הממליץ לא הוסיף ניתוח להמלצה הזו.'}</p>
- <div className="pick-footer">{!detail?<Link href={`/picks/${pick.id}`}>לפרטים ולהיסטוריה <ArrowLeft size={15}/></Link>:<Link href="/responsible-play">משחקים באחריות</Link>}<div><button onClick={share}><Share2 size={16}/>שיתוף</button>{detail&&data.me&&<button onClick={async()=>{const reason=prompt('מה הסיבה לדיווח?');if(!reason)return;try{await act('account',{action:'report',target_type:'pick',target_id:pick.id,reason});toast('הדיווח נשלח לבדיקה');}catch(e){toast((e as Error).message);}}}><Flag size={15}/>דיווח</button>}</div></div></article>;
+ async function like(){setBusy(true);try{await act('like',{id:pick.id,liked:!liked});}catch(e){toast((e as Error).message);}finally{setBusy(false);}}
+ return <article className={`pick-card compact-pick ${detail?'pick-detail':''}`}>
+ <div className="pick-top"><div className="author"><Link href={`/tipsters/${user.nickname}`}><Avatar profile={user}/><span><strong>{user.nickname.replaceAll('_',' ')}</strong><time dateTime={pick.published_at}>{dateLabel(pick.published_at,true)}</time></span></Link><Follow id={user.id}/></div><div className="match-summary"><strong>{event.home} <span>—</span> {event.away}</strong><small>{event.league} · {dateLabel(event.starts_at,true)}</small></div></div>
+ <div className="selection-strip"><div><span className="overline">{market?.label}</span><strong>{selection.label}</strong></div><div className="odds"><span>{event.is_demo?'יחס הדגמה':event.source==='winner'?'יחס Winner':'יחס המקור'}</span><b dir="ltr">{Number(pick.published_odds).toFixed(2)}</b></div></div>
+ {(pick.analysis||pick.hidden)&&<p className="analysis">{pick.hidden?'הניתוח הוסתר על ידי צוות המודרציה. הרשומה והביצועים נשמרים.':pick.analysis}</p>}
+ <div className="pick-status"><span className={`status ${pick.status}`}>{pick.status==='won'?<Check size={14}/>:<LockKeyhole size={13}/>} {statusLabels[pick.status]}</span><Streak count={data.stats.find(s=>s.id===user.id)?.win_streak||0}/></div>
+ <div className="pick-footer">{!detail?<Link href={`/picks/${pick.id}`}>פרטים <ArrowLeft size={15}/></Link>:<Link href="/responsible-play">משחקים באחריות</Link>}<div>{data.me?<button className={liked?'liked':''} aria-label={liked?'ביטול לייק':'אהבתי את ההמלצה'} aria-pressed={liked} disabled={busy||pick.hidden} onClick={like}><Heart size={17} fill={liked?'currentColor':'none'}/>{count}</button>:<Link className="like-login" href="/login" aria-label="כניסה כדי לעשות לייק"><Heart size={17}/>{count}</Link>}<button onClick={share}><Share2 size={16}/>שיתוף</button>{detail&&data.me&&<button onClick={async()=>{const reason=prompt('מה הסיבה לדיווח?');if(!reason)return;try{await act('account',{action:'report',target_type:'pick',target_id:pick.id,reason});toast('הדיווח נשלח לבדיקה');}catch(e){toast((e as Error).message);}}}><Flag size={15}/>דיווח</button>}</div></div></article>;
 }

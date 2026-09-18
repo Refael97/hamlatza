@@ -15,6 +15,7 @@ export async function POST(request:Request,{params}:{params:Promise<{action:stri
   const input=JSON.parse(raw),{action}=await params; let result:unknown;
   if(action==='publish') {result=await rpc('publish_pick',pickInput.parse(input));if(isDemo())after(async()=>{await demoRpc('process_jobs',{},null,true);});}
   else if(action==='profile')result=await rpc('save_profile',profileInput.parse(input));
+  else if(action==='like')result=await rpc('like_pick',z.object({id:z.uuid(),liked:z.boolean()}).parse(input));
   else if(action==='follow')result=await rpc('follow_user',z.object({id:z.uuid(),follow:z.boolean()}).parse(input));
   else if(action==='account'){
    if(input.action==='delete'&&!isDemo()&&!process.env.SUPABASE_SERVICE_ROLE_KEY)throw new Error('DELETE_UNAVAILABLE');
